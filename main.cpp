@@ -19,6 +19,7 @@ int main(){
         entry.set_name(inp_name);
         data.push_back(entry);
     }
+    file.close();
 
     RelSort(data);
     enum_data(data);
