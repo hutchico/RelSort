@@ -20,9 +20,11 @@ int main(){
         data.push_back(entry);
     }
     file.close();
+    enum_data(data);
 
     RelSort(data);
-    enum_data(data);
+
+    
 
     return 0;
 }
