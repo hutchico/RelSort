@@ -9,7 +9,7 @@ int main(){
     std::vector<favorite> data;
     favorite entry;
 
-    file.open("input");
+    file.open("input.txt");
     while(true){
         std::string inp_name;
         if(file.eof()){
