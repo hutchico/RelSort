@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "Favorite.hpp"
+#include "Favorite.hpp" 
 
 int main(){
 
@@ -20,7 +20,6 @@ int main(){
         data.push_back(entry);
     }
     file.close();
-    enum_data(data);
 
     RelSort(data);
 

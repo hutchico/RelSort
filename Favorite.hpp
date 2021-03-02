@@ -36,18 +36,7 @@ public:
     void inc_lower(string name){ lower.push_back(name); }
     void inc_higher(string name){ higher.push_back(name); }
     
-    //DEBUG: get contents of instance
-    void enum_relations(){
-        cout << endl << "Name: " << identifier << endl;
-        cout << "Relations: " << endl;
-        cout << "Less Than: ";
-        for(int i = 0; i < higher.size(); i++)
-            cout << higher[i] << " , ";
-        cout << endl << "Greater Than: ";
-        for(int i = 0; i < lower.size(); i++)
-            cout << lower[i] << " , ";
-        cout << endl;
-    }
+    
 
 private:
     string identifier;
@@ -55,11 +44,24 @@ private:
     vector<string> higher; //"" GREATER
 };
 
+//DEBUG: get contents of instance
+void enum_relations(favorite item){
+        cout << "Name: " << item.get_name() << endl;
+        cout << "Relations: " << endl;
+        cout << "Less Than: ";
+        for(int i = 0; i < item.get_highSize(); i++)
+            cout << item.read_higher(i) << " , ";
+        cout << endl << "Greater Than: ";
+        for(int i = 0; i < item.get_lowSize(); i++)
+            cout << item.read_lower(i) << " , ";
+        cout << endl;
+}
+
 //DEBUG: confirm relation contents across all inputs
 void spit_data(vector<favorite> data){
     cout << "Details: " << endl;
     for(int i = 0; i < data.size(); i++){
-        data[i].enum_relations();
+        enum_relations(data[i]);
     }
 };
 
@@ -98,7 +100,7 @@ void swap(vector<favorite> &data,map<string,int> &directory, int left, int right
 
 //insert member at position, shuffle dictionary references down one value
 void insert_item(vector<favorite> &data,map<string,int> &directory, string target, int loc, int mode){
-
+    enum_relations(data[directory[target]]);
     assert(loc >= 0 && loc < data.size());
 
     int targetLoc = directory[target];
@@ -128,18 +130,18 @@ void insert_item(vector<favorite> &data,map<string,int> &directory, string targe
 
 //Verify that an array member at position to_check is positioned between all values greater than and less than itself
 bool check_sort_compliant(vector<favorite> data, map<string,int> directory, int to_check){
-    //data[to_check].enum_relations();
+    //enum_relations(data[to_check]);
     int refPos = directory[data[to_check].get_name()];
     for(int i = 0; i < data[to_check].get_highSize(); i++){
         int testRef = directory[data[to_check].read_higher(i)];
-        if(refPos < testRef)
+        if(refPos > testRef)
             continue;
         else
             return false;
     }
     for(int i = 0; i < data[to_check].get_lowSize(); i++){
         int testRef = directory[data[to_check].read_lower(i)];
-        if(refPos > testRef)
+        if(refPos < testRef)
             continue;
         else
             return false;
@@ -236,16 +238,19 @@ int find_lowest_array_val(favorite input, map<string,int> directory){
 
 void arrange(vector<favorite> &data,map<string,int> &directory){
     //Start from the bottom of the list, move entry to just above its highest entry
-    int current_ref = data.size();
-    while(current_ref > 0){
+    //after moving an entry, start at the bottom again
+    int current_ref = data.size() - 1;
+    while(current_ref >= 0){
+        //cout << "currently sorting: " << current_ref << endl;
+        enum_data(data);
         if(!check_sort_compliant(data,directory,current_ref)){
             if(data[current_ref].get_lowSize() > 0) //Attempt to place instance above its highest low value
                 insert_item(data,directory,data[current_ref].get_name(),find_greatest_array_val(data[current_ref],directory), 1);
-            else{ //if this isn't possible, just move it to the bottom of the array and start over.
+            else{                                   //if this isn't possible, just move it to the bottom of the array
                 int pos = find_lowest_array_val(data[current_ref],directory);
                 insert_item(data,directory,data[current_ref].get_name(),pos,2);
-                current_ref = data.size();
             }
+            current_ref = data.size() - 1;
         }
         else
             current_ref--;
@@ -260,9 +265,9 @@ void RelSort(vector<favorite> &data){
     }
     
     survey(data,directory);
-
-    //arrange(data,directory);
-
+    cout << "Sorting, please wait." << endl;
+    arrange(data,directory);
+    cout << "Final order: " << endl;
     enum_data(data);
 
     spit_data(data);
