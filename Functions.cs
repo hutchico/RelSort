@@ -86,12 +86,12 @@ namespace RelSort {
             pchoice = System.Int32.Parse(System.Console.ReadLine());
             */
             if(pchoice == 1) {
-                left.inc_lower(rname);
-                right.inc_higher(lname);
+                left.add_relation(rname,0);
+                right.add_relation(lname,1);
             }
             else {
-                left.inc_higher(rname);
-                right.inc_lower(lname);
+                left.add_relation(rname,1);
+                right.add_relation(lname,0);
             }
         }
         //Update relations according to precedence after everything has been compared x times
@@ -108,12 +108,10 @@ namespace RelSort {
             for(int i = 0; i < data.Count; i++) {
                 if(data[i].get_hierarchy_size() == data.Count - 1)
                     continue; //if a list member has already been compared to everything but itself, skip it
-                for(int j = 0; j < data[i].get_highSize(); j++) {
+                for(int j = 0; j < data[i].get_hierarchy_size(); j++) {
 
                 }
-                for(int j = 0; j < data[i].get_lowSize(); j++) {
-
-                }
+                
                 
             }
         }
@@ -123,11 +121,11 @@ namespace RelSort {
             //insert the bottom of the list somewhere else in the list, restart at bottom. repeat until every list member is positioned properly
             while(current_ref >= 0) {
                 if(!check_sort_compliant(data,table,current_ref)) {
-                    if(data[current_ref].get_lowSize() > 0)
+                    if(data[current_ref].get_lower() > 0)
                         insert_item(ref data,ref table,data[current_ref].get_name(),find_greatest_array_val(data[current_ref],table),1);
-                    else
+                    else //if you can't insert it above something, try and insert it below something instead. implies current_ref != last array position
                         insert_item(ref data,ref table,data[current_ref].get_name(),find_lowest_array_val(data[current_ref],table),2);
-                    current_ref = data.Count - 1;
+                    current_ref = data.Count - 1; //restart from the bottom either way
                 }
                 else
                     --current_ref;
@@ -136,20 +134,23 @@ namespace RelSort {
 
         internal static bool check_sort_compliant(List<Favorite> data,Dictionary<string,int> table,int to_check) {
             int refPos = table[data[to_check].get_name()];
-            for(int i = 0; i < data[to_check].get_highSize(); i++) {
-                int testRef = table[data[to_check].read_higher(i)];
-                if(refPos > testRef)
-                    continue;
-                else
-                    return false;
+            for(int i = 0; i < data[to_check].get_hierarchy_size(); i++) {
+                int dir = data[to_check].get_relType(i);
+                int testRef = table[data[to_check].get_relName(i)];
+                if(dir == 1) {
+                    if(refPos > testRef)
+                        continue;
+                    else
+                        return false;
+                }
+                else {
+                    if(refPos < testRef)
+                        continue;
+                    else
+                        return false;
+                }
             }
-            for(int i = 0; i < data[to_check].get_lowSize(); i++) {
-                int testRef = table[data[to_check].read_lower(i)];
-                if(refPos < testRef)
-                    continue;
-                else
-                    return false;
-            }
+                
             return true;
         }
 
@@ -176,8 +177,10 @@ namespace RelSort {
         //find the earliest array value this Favorite can be placed above in the array
         internal static int find_greatest_array_val(Favorite input,Dictionary<string,int> table) {
             int greatest = table.Count + 1; //
-            for(int i = 0; i < input.get_lowSize(); i++) {
-                int rel_pos = table[input.read_lower(i)];
+            for(int i = 0; i < input.get_hierarchy_size(); i++) {
+                if(input.get_relType(i) == 1)
+                    continue;   //only care about relations that are below this Favorite
+                int rel_pos = table[input.get_relName(i)];
                 if(rel_pos < greatest)
                     greatest = rel_pos;
             }
@@ -186,8 +189,10 @@ namespace RelSort {
         //find the last array value this Favorite can be placed below in the array
         internal static int find_lowest_array_val(Favorite input,Dictionary<string,int> table) {
             int lowest = -1;
-            for(int i = 0; i < input.get_highSize(); i++) {
-                int rel_pos = table[input.read_higher(i)];
+            for(int i = 0; i < input.get_hierarchy_size(); i++) {
+                if(input.get_relType(i) == 0)
+                    continue;   //see above, opposite
+                int rel_pos = table[input.get_relName(i)];
                 if(rel_pos > lowest)
                     lowest = rel_pos;
             }

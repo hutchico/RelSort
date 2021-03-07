@@ -7,45 +7,55 @@ namespace RelSort
     {
         public Favorite(){
             name = null;
-            lower = new List<string>();
-            higher = new List<string>();
         }
         public Favorite(string name){
             this.name = name;
-            lower = new List<string>();
-            higher = new List<string>();
+            hierarchy = new List<KeyValuePair<string,int>>();
+            num_higher = 0;
+            num_lower = 0;
         }
 
         public string get_name(){ return name; }
-        public int get_hierarchy_size(){ return lower.Count + higher.Count; }
-        public int get_lowSize(){ return lower.Count; }
-        public int get_highSize(){ return higher.Count; }
+        public int get_hierarchy_size(){ return hierarchy.Count; }
 
-        public string read_lower(int pos){ return lower[pos]; }
-        public string read_higher(int pos){ return higher[pos]; }
+        public string get_relName(int pos) { return hierarchy[pos].Key; }
+        public int get_relType(int pos) { return hierarchy[pos].Value; }
+        public int get_lower() { return num_lower; }
+        public int get_higher() { return num_higher; }
 
-        public void inc_lower(string rel){ lower.Add(rel); }
-        public void inc_higher(string rel){ higher.Add(rel); }
+       
+
+        public void add_relation(string rel,int dir){
+            hierarchy.Add(new KeyValuePair<string,int>(rel,dir));
+            if(dir == 1)
+                ++num_higher;
+            else
+                ++num_lower;
+        }
 
         //DEBUG: get contents of object
         public void print_relations(){
             System.Console.WriteLine("Name: " + name);
-            if(higher.Count > 0)
+            if(num_higher > 0)
                 System.Console.WriteLine("Less than: ");
-            foreach(string rel in higher){
-                System.Console.WriteLine(rel);
+            foreach(KeyValuePair<string,int> entry in hierarchy){
+                if(entry.Value == 1)
+                    System.Console.WriteLine(entry.Key);
             }
-            if(lower.Count > 0)
+            if(num_lower > 0)
                 System.Console.WriteLine("Greater than: ");
-            foreach (string rel in lower){
-                System.Console.WriteLine(rel);
+            foreach(KeyValuePair<string,int> entry in hierarchy) {
+                if(entry.Value == 0)
+                    System.Console.WriteLine(entry.Key);
             }
         }
 
-        private List<string> lower;
-        private List<string> higher;
+        //private List<string> lower;
+        //private List<string> higher;
         private readonly string name;
 
-        //private List<KeyValuePair<string,int>> hierarchy; //beginnings of a return to a previous design choice
+        private List<KeyValuePair<string,int>> hierarchy; //return to a previous design choice
+        private int num_lower;
+        private int num_higher;
     }
 }

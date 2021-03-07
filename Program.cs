@@ -18,9 +18,6 @@ namespace RelSort
                 obj = new Favorite(entry);
                 
                 data.Add(obj);
-                
-                obj = null;
-                entry = null;
             }
             file.Close();
 
