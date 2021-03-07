@@ -30,6 +30,8 @@ namespace RelSort
 
             Functions.print_data(data);
 
+            Functions.spit_rels(data); //DEBUG
+
         }
     }
 

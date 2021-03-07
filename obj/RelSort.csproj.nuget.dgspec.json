@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\C# Port\\RelSort\\RelSort.csproj": {}
+    "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\RelSort.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\C# Port\\RelSort\\RelSort.csproj": {
+    "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\RelSort.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\C# Port\\RelSort\\RelSort.csproj",
+        "projectUniqueName": "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\RelSort.csproj",
         "projectName": "RelSort",
-        "projectPath": "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\C# Port\\RelSort\\RelSort.csproj",
+        "projectPath": "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\RelSort.csproj",
         "packagesPath": "C:\\Users\\Cooper\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\C# Port\\RelSort\\obj\\",
+        "outputPath": "C:\\Users\\Cooper\\Documents\\Code\\RelSort\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
