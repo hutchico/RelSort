@@ -14,20 +14,18 @@ namespace RelSort
             string entry;
             while(!file.EndOfStream){
                 entry = file.ReadLine();
-               
                 obj = new Favorite(entry);
-                
                 data.Add(obj);
             }
             file.Close();
 
-            Functions.print_data(data);
+            //Functions.print_data(data);
 
             Functions.RelSort(ref data);
 
             Functions.print_data(data);
 
-            Functions.spit_rels(data); //DEBUG
+            //Functions.spit_rels(data); //DEBUG
 
         }
     }

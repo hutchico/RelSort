@@ -61,11 +61,6 @@ namespace RelSort {
                 if((db[i].Value == input.Value && db[i].Key == input.Key) || (db[i].Value == inverse.Value && db[i].Key == inverse.Key))
                     return true;
             }
-            /*
-            if((db.Exists(x => x.Key == input.Key) && db.Exists(x => x.Value == input.Value)) || (db.Exists(x => x.Key == input.Value) && db.Exists(x => x.Value == input.Key))){
-                return true; //lambda expressions scare me
-            }
-            */
             return false;
         }
 
@@ -99,15 +94,10 @@ namespace RelSort {
         //Update relations to fill in missing relations after Size/2 comparisons have been made
         internal static void interpolate_relations(ref List<Favorite> data, Dictionary<string,int> table) {
             /*
-            TODO: implement this somehow
-            thoughts: start at the bottom, work up?
-                can't start at the actual bottom because there is no 'actual bottom' when speaking relatively
             observation: if A>B and B>C, logically A>C
-            new idea: start at the top, for each entry: go down list,
-                        if that entry is greater/less than another entry, 
-                            add that entry to the main entry's greater/lesser list with the same polarity
-            boy howdy do I hate myself for making this work like it does
-            never mind it's not as bad as it looked originally
+            start at the top, for each entry: go down list,
+                if that entry is greater/less than another entry, 
+                   add that entry to the main entry's list with the same polarity
             */
             for(int i = 0; i < data.Count; i++) {
                 for(int j = 0; j < data[i].get_hierarchy_size(); j++) {
@@ -135,7 +125,7 @@ namespace RelSort {
                     --current_ref;
             }
         }
-
+        //verify a list member is positioned between its respectively greater and lesser values per user survey
         internal static bool check_sort_compliant(List<Favorite> data,Dictionary<string,int> table,int to_check) {
             int refPos = table[data[to_check].get_name()];
             for(int i = 0; i < data[to_check].get_hierarchy_size(); i++) {
@@ -205,7 +195,7 @@ namespace RelSort {
         internal static void copy_relations(ref List<Favorite> data, int recipient, int donor, int mode) {
             for(int i = 0; i < data[donor].get_hierarchy_size(); i++) {
                 if(data[recipient].test_contents(data[donor].get_relation(i)))
-                    continue; //if toCopy already has this relation, don't copy it again
+                    continue; //if recipient already has this relation, don't copy it again
                 else {
                     if(data[donor].get_relType(i) == mode) //if it's the same polarity of relation, copy it
                         data[recipient].add_relation(data[donor].get_relName(i),data[donor].get_relType(i));
@@ -219,7 +209,7 @@ namespace RelSort {
                 System.Console.WriteLine(data[i].get_name());
             }
         }
-
+        //DEBUG: get all relations at end of run
         public static void spit_rels(List<Favorite> data) {
             foreach(Favorite mem in data)
                 mem.print_relations();
