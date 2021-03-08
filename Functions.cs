@@ -11,7 +11,9 @@ namespace RelSort {
             }
             survey(ref data);
             System.Console.WriteLine("Sorting...");
-            arrange(ref data,ref table);
+            arrange(ref data,ref table); //initial list sort
+            interpolate_relations(ref data, table); //update all list members based on first sort
+            arrange(ref data,ref table); //sort again, this time with a complete relation map (theoretically)
         }
         
         internal static void survey(ref List<Favorite> data){
@@ -42,8 +44,9 @@ namespace RelSort {
         }
 
         internal static bool check_relation_min(List<Favorite> data) {
+            int num_surveys = data.Count / 2; //minimum needed to ensure a stable list
             foreach(Favorite mem in data) {
-                if(mem.get_hierarchy_size() >= Constants.num_surveys)
+                if(mem.get_hierarchy_size() >= num_surveys)
                     continue;
                 else
                     return false;
@@ -67,24 +70,23 @@ namespace RelSort {
         }
 
         internal static void compare(ref Favorite left,ref Favorite right){
-            string choice;
             int pchoice;
             string lname = left.get_name();
             string rname = right.get_name();
 
             System.Console.WriteLine("Left or right, 1/0:");
             System.Console.WriteLine("{1} or {0}?",rname,lname);
-
             
             //DEBUG: remove user input from testing
+            /*
             if(lname[6] < rname[6])
                 pchoice = 1;
             else
                 pchoice = 0;
-            /*
-            //choice = ;
-            pchoice = System.Int32.Parse(System.Console.ReadLine());
             */
+            
+            pchoice = System.Int32.Parse(System.Console.ReadLine());
+            
             if(pchoice == 1) {
                 left.add_relation(rname,0);
                 right.add_relation(lname,1);
@@ -94,8 +96,8 @@ namespace RelSort {
                 right.add_relation(lname,0);
             }
         }
-        //Update relations according to precedence after everything has been compared x times
-        internal static void interpolate_relations(ref List<Favorite> data) {
+        //Update relations to fill in missing relations after Size/2 comparisons have been made
+        internal static void interpolate_relations(ref List<Favorite> data, Dictionary<string,int> table) {
             /*
             TODO: implement this somehow
             thoughts: start at the bottom, work up?
@@ -103,16 +105,18 @@ namespace RelSort {
             observation: if A>B and B>C, logically A>C
             new idea: start at the top, for each entry: go down list,
                         if that entry is greater/less than another entry, 
-                            add that entry to the main entry's greater/lesser list
+                            add that entry to the main entry's greater/lesser list with the same polarity
+            boy howdy do I hate myself for making this work like it does
+            never mind it's not as bad as it looked originally
             */
             for(int i = 0; i < data.Count; i++) {
-                if(data[i].get_hierarchy_size() == data.Count - 1)
-                    continue; //if a list member has already been compared to everything but itself, skip it
                 for(int j = 0; j < data[i].get_hierarchy_size(); j++) {
-
+                    if(data[i].get_hierarchy_size() == data.Count - 1)
+                        break; //if a list member already has relations to everything but itself, move on
+                    KeyValuePair<string,int> target = data[i].get_relation(j);
+                    int listPos = table[target.Key];
+                    copy_relations(ref data,i,listPos,target.Value);
                 }
-                
-                
             }
         }
 
@@ -150,7 +154,6 @@ namespace RelSort {
                         return false;
                 }
             }
-                
             return true;
         }
 
@@ -191,12 +194,23 @@ namespace RelSort {
             int lowest = -1;
             for(int i = 0; i < input.get_hierarchy_size(); i++) {
                 if(input.get_relType(i) == 0)
-                    continue;   //see above, opposite
+                    continue;   //see above
                 int rel_pos = table[input.get_relName(i)];
                 if(rel_pos > lowest)
                     lowest = rel_pos;
             }
             return lowest;
+        }
+        //copy a subset of the relations in donor to the relations in recipient
+        internal static void copy_relations(ref List<Favorite> data, int recipient, int donor, int mode) {
+            for(int i = 0; i < data[donor].get_hierarchy_size(); i++) {
+                if(data[recipient].test_contents(data[donor].get_relation(i)))
+                    continue; //if toCopy already has this relation, don't copy it again
+                else {
+                    if(data[donor].get_relType(i) == mode) //if it's the same polarity of relation, copy it
+                        data[recipient].add_relation(data[donor].get_relName(i),data[donor].get_relType(i));
+                }
+            }
         }
 
         public static void print_data(List<Favorite> data) {

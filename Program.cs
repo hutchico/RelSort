@@ -31,8 +31,4 @@ namespace RelSort
 
         }
     }
-
-    static class Constants{
-        public const int num_surveys = 3;
-    }
 }

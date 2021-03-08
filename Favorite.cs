@@ -20,10 +20,16 @@ namespace RelSort
 
         public string get_relName(int pos) { return hierarchy[pos].Key; }
         public int get_relType(int pos) { return hierarchy[pos].Value; }
+        public KeyValuePair<string,int> get_relation(int pos) { return hierarchy[pos]; }
         public int get_lower() { return num_lower; }
         public int get_higher() { return num_higher; }
 
-       
+        public bool test_contents(KeyValuePair<string,int> input) {
+            if(hierarchy.Contains(input))
+                return true;
+            else
+                return false;
+        }
 
         public void add_relation(string rel,int dir){
             hierarchy.Add(new KeyValuePair<string,int>(rel,dir));
@@ -50,8 +56,7 @@ namespace RelSort
             }
         }
 
-        //private List<string> lower;
-        //private List<string> higher;
+        
         private readonly string name;
 
         private List<KeyValuePair<string,int>> hierarchy; //return to a previous design choice
