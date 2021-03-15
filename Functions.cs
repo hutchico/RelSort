@@ -23,6 +23,7 @@ namespace RelSort {
             int maxRoll = data.Count;
             int left;
             int right;
+            int num_comparisons = 0;
             while(!check_relation_min(data)){
                 while(true) {
                     left = rand.Next(maxRoll);
@@ -40,11 +41,14 @@ namespace RelSort {
                 compare(ref pleft,ref pright);
                 data[left] = pleft;
                 data[right] = pright;
+                ++num_comparisons;
             }
+            System.Console.WriteLine("Performed {0} tests out of possible {1}.",num_comparisons,(data.Count * (data.Count - 1)) / 2);
         }
 
         internal static bool check_relation_min(List<Favorite> data) {
-            int num_surveys = data.Count / 2; //minimum needed to ensure a stable list
+            double raw = data.Count / 2;
+            int num_surveys = (int)Math.Ceiling(raw); //minimum needed to ensure a stable list
             foreach(Favorite mem in data) {
                 if(mem.get_hierarchy_size() >= num_surveys)
                     continue;
@@ -57,7 +61,7 @@ namespace RelSort {
         internal static bool test_pair(KeyValuePair<string,string> input,List<KeyValuePair<string,string>> db){
             KeyValuePair<string,string> inverse = new KeyValuePair<string,string>(input.Value,input.Key);
             for(int i = 0; i < db.Count; i++) {
-                //if(db[i] == input || db[i] == inverse) //why can't C# do this when C++ does it no problem?
+                //if(db[i] == input || db[i] == inverse) //why doesn't C# Pairs have a built in == comparison like C++ does?
                 if((db[i].Value == input.Value && db[i].Key == input.Key) || (db[i].Value == inverse.Value && db[i].Key == inverse.Key))
                     return true;
             }
@@ -70,18 +74,32 @@ namespace RelSort {
             string rname = right.get_name();
 
             System.Console.WriteLine("Left or right, 1/0:");
-            System.Console.WriteLine("{1} or {0}?",rname,lname);
-            
+            System.Console.WriteLine("{0} or {1}?",lname,rname);
+
             //DEBUG: remove user input from testing
-            /*
-            if(lname[6] < rname[6])
-                pchoice = 1;
+            if(lname.Length > 7)
+                lname = lname.Substring(6,2);
             else
+                lname = lname.Substring(6,1);
+            if(rname.Length > 7)
+                rname = rname.Substring(6,2);
+            else
+                rname = rname.Substring(6,1);
+
+            if(System.Int32.Parse(lname) < System.Int32.Parse(rname))
+                pchoice = 1;
+            else 
                 pchoice = 0;
-            */
-            
+
+            System.Console.WriteLine(pchoice);
+
+
+            lname = left.get_name(); //DEBUG: reset name values from earlier
+            rname = right.get_name();
+
+            /*
             pchoice = System.Int32.Parse(System.Console.ReadLine());
-            
+            */
             if(pchoice == 1) {
                 left.add_relation(rname,0);
                 right.add_relation(lname,1);

@@ -12,6 +12,8 @@ namespace RelSort
             List<Favorite> data = new List<Favorite>();
             Favorite obj;
             string entry;
+            int min_surveys;
+
             while(!file.EndOfStream){
                 entry = file.ReadLine();
                 obj = new Favorite(entry);
@@ -19,7 +21,9 @@ namespace RelSort
             }
             file.Close();
 
-            //Functions.print_data(data);
+            min_surveys = data.Count * (data.Count / 4); //sort function will need to perform AT LEAST this many comparisons to build a list
+
+            Functions.print_data(data);
 
             Functions.RelSort(ref data);
 
