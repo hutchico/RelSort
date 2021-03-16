@@ -22,7 +22,7 @@ namespace RelSort
             }
             file.Close();
 
-            while(data.Count != input.Count) { //Randomize the list contents
+            while(input.Count != 0) { //Randomize the list contents
                 int pos = rand.Next(input.Count);
                 data.Add(input[pos]);
                 input.RemoveAt(pos);

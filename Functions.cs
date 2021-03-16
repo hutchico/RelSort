@@ -25,38 +25,62 @@ namespace RelSort {
             int numComparisons = 0;
             int left, right;
             while(currentMax <= maxComparisons) {
+                //outer
+                int debug = -1;
                 for(int i = 0; i < data.Count; i+=2) {
                     Favorite pleft = data[i]; //C# doesn't let you pass this as an argument apparently
                     Favorite pright;
                     left = i;
                     right = i + 1;
-                    if(data.Count % 2 == 1 && left == data.Count - 1) //catch odd number lists
+                    if(data.Count % 2 == 1 && left == data.Count - 1) {//catch odd number lists
                         pright = data[rand.Next(data.Count)];
+                        while(pright == pleft)
+                            pright = data[rand.Next(data.Count)];
+
+                    }
                     else
                         pright = data[right];
                     while(true) {
                         compair = new KeyValuePair<string,string>(pleft.get_name(),pright.get_name());
                         if(test_pair(compair,tried)) {
-                            if(i == data.Count - 1)
-                                right = 0;
-                                
+                            /*
+                            two edge cases to handle:
+                            pair has been compared before, try and shift right comparator down one array value
+                            pair has been compared, left has been compared to every other value already, 
+                                    so shifting right value will never result in a meaningful comparison
+                            */
+                            while(true) {
+                                if(pleft.get_hierarchy_size() == data.Count - 1) {
+                                    if(left == data.Count - 1)
+                                        left = -1;
+                                    pleft = data[++left];
+                                }
+                                else {
+                                    if(right >= data.Count - 1)
+                                        right = -1;
+                                    ++right;
+                                    pright = data[right];
+                                }
+                                if(pright == pleft) //continue this loop until we have two unique comparisons to make
+                                    continue; 
+                                break; //should only run once unless the two wind up equal somehow
+                            }
                         }
                         else {
                             tried.Add(compair);
                             break;
                         }
                     }
-
                     compare(ref pleft,ref pright);
-                    data[i] = pleft;
-                    data[i+1] = pright;
+                    data[table[pleft.get_name()]] = pleft; 
+                    data[table[pright.get_name()]] = pright;
                     ++numComparisons;
                 }
                 interpolate_relations(ref data,table);
                 arrange(ref data,ref table);
                 ++currentMax;
             }
-            //NOTE: this probably isn't right since I rewrote the survey function to be systematic rather than random
+            //NOTE: this probably isn't right since the survey function was rewritten to be systematic rather than random
             System.Console.WriteLine("Performed {0} tests out of possible {1}.",numComparisons,(data.Count * (data.Count - 1)) / 2);
         }
 
@@ -72,6 +96,11 @@ namespace RelSort {
 
         internal static bool test_pair(KeyValuePair<string,string> input,List<KeyValuePair<string,string>> db){
             KeyValuePair<string,string> inverse = new KeyValuePair<string,string>(input.Value,input.Key);
+            if(input.Value == input.Key) { //DEBUG: attempt to catch a fatal error
+                System.Console.WriteLine("Warning: Program attempted to compare {0} to itself.",input.Key);
+                
+                return true;
+            }
             for(int i = 0; i < db.Count; i++) {
                 //if(db[i] == input || db[i] == inverse) //why doesn't C# Pairs have a built in == comparison like C++ does?
                 if((db[i].Value == input.Value && db[i].Key == input.Key) || (db[i].Value == inverse.Value && db[i].Key == inverse.Key))
