@@ -9,48 +9,60 @@ namespace RelSort {
             for(int i = 0; i < data.Count; i++) {
                 table[data[i].get_name()] = i;
             }
-            survey(ref data);
+            survey(ref data, ref table);
             System.Console.WriteLine("Sorting...");
             arrange(ref data,ref table); //initial list sort
             interpolate_relations(ref data, table); //update all list members based on first sort
             arrange(ref data,ref table); //sort again, this time with a complete relation map (theoretically)
         }
         
-        internal static void survey(ref List<Favorite> data){
+        internal static void survey(ref List<Favorite> data, ref Dictionary<string,int> table){
             var rand = new Random();
             KeyValuePair<string,string> compair;
             List<KeyValuePair<string,string>> tried = new List<KeyValuePair<string,string>>();
-            int maxRoll = data.Count;
-            int left;
-            int right;
-            int num_comparisons = 0;
-            while(!check_relation_min(data)){
-                while(true) {
-                    left = rand.Next(maxRoll);
-                    right = rand.Next(maxRoll);
-                    if(left != right)
-                        break; //don't compare an object to itself
+            int maxComparisons = (int)Math.Ceiling((double)data.Count / 2); //minimum relations per item for a complete list
+            int currentMax = 1;
+            int numComparisons = 0;
+            int left, right;
+            while(currentMax <= maxComparisons) {
+                for(int i = 0; i < data.Count; i+=2) {
+                    Favorite pleft = data[i]; //C# doesn't let you pass this as an argument apparently
+                    Favorite pright;
+                    left = i;
+                    right = i + 1;
+                    if(data.Count % 2 == 1 && left == data.Count - 1) //catch odd number lists
+                        pright = data[rand.Next(data.Count)];
+                    else
+                        pright = data[right];
+                    while(true) {
+                        compair = new KeyValuePair<string,string>(pleft.get_name(),pright.get_name());
+                        if(test_pair(compair,tried)) {
+                            if(i == data.Count - 1)
+                                right = 0;
+                                
+                        }
+                        else {
+                            tried.Add(compair);
+                            break;
+                        }
+                    }
+
+                    compare(ref pleft,ref pright);
+                    data[i] = pleft;
+                    data[i+1] = pright;
+                    ++numComparisons;
                 }
-                
-                compair = new KeyValuePair<string,string>(data[left].get_name(),data[right].get_name());
-                if(test_pair(compair,tried))
-                    continue; //don't reuse pairs of values we've already tested
-                tried.Add(compair);
-                var pleft = data[left]; //C# doesn't let you pass this as an argument apparently
-                var pright = data[right];
-                compare(ref pleft,ref pright);
-                data[left] = pleft;
-                data[right] = pright;
-                ++num_comparisons;
+                interpolate_relations(ref data,table);
+                arrange(ref data,ref table);
+                ++currentMax;
             }
-            System.Console.WriteLine("Performed {0} tests out of possible {1}.",num_comparisons,(data.Count * (data.Count - 1)) / 2);
+            //NOTE: this probably isn't right since I rewrote the survey function to be systematic rather than random
+            System.Console.WriteLine("Performed {0} tests out of possible {1}.",numComparisons,(data.Count * (data.Count - 1)) / 2);
         }
 
-        internal static bool check_relation_min(List<Favorite> data) {
-            double raw = data.Count / 2;
-            int num_surveys = (int)Math.Ceiling(raw); //minimum needed to ensure a stable list
+        internal static bool check_relation_min(List<Favorite> data, int minNum){ 
             foreach(Favorite mem in data) {
-                if(mem.get_hierarchy_size() >= num_surveys)
+                if(mem.get_hierarchy_size() >= minNum)
                     continue;
                 else
                     return false;
@@ -128,6 +140,7 @@ namespace RelSort {
             }
         }
 
+        #region Arrange
         internal static void arrange(ref List<Favorite> data,ref Dictionary<string,int> table) {
             int current_ref = data.Count - 1;
             //insert the bottom of the list somewhere else in the list, restart at bottom. repeat until every list member is positioned properly
@@ -209,6 +222,8 @@ namespace RelSort {
             }
             return lowest;
         }
+        #endregion
+
         //copy a subset of the relations in donor to the relations in recipient
         internal static void copy_relations(ref List<Favorite> data, int recipient, int donor, int mode) {
             for(int i = 0; i < data[donor].get_hierarchy_size(); i++) {
