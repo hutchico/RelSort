@@ -22,7 +22,7 @@ namespace RelSort
             }
             file.Close();
 
-            while(input.Count != 0) { //Randomize the list contents
+            while(input.Count != 0) { //Randomize list contents to mitigate entry bias
                 int pos = rand.Next(input.Count);
                 data.Add(input[pos]);
                 input.RemoveAt(pos);
@@ -35,7 +35,6 @@ namespace RelSort
             Functions.print_data(data);
 
             //Functions.spit_rels(data); //DEBUG
-
         }
     }
 }

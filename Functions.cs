@@ -3,31 +3,23 @@ using System.Collections.Generic;
 
 namespace RelSort {
     public static class Functions {
-        
-        public static void RelSort(ref List<Favorite> data){
+
+        public static void RelSort(ref List<Favorite> data) {
             Dictionary<string,int> table = new Dictionary<string,int>();
-            for(int i = 0; i < data.Count; i++) {
-                table[data[i].get_name()] = i;
-            }
-            survey(ref data, ref table);
-            System.Console.WriteLine("Sorting...");
-            arrange(ref data,ref table); //initial list sort
-            interpolate_relations(ref data, table); //update all list members based on first sort
-            arrange(ref data,ref table); //sort again, this time with a complete relation map (theoretically)
-        }
-        
-        internal static void survey(ref List<Favorite> data, ref Dictionary<string,int> table){
             var rand = new Random();
             KeyValuePair<string,string> compair;
             List<KeyValuePair<string,string>> tried = new List<KeyValuePair<string,string>>();
-            int maxComparisons = (int)Math.Ceiling((double)data.Count / 2); //minimum relations per item for a complete list
-            int currentMax = 1;
+            int maxComparisons = (int)Math.Ceiling((double)data.Count / 2); //TODO: make this configurable
+            int currentGen = 1;
             int numComparisons = 0;
             int left, right;
-            while(currentMax <= maxComparisons) {
-                //outer
-                int debug = -1;
-                for(int i = 0; i < data.Count; i+=2) {
+
+            for(int i = 0; i < data.Count; i++) { //build initial dictionary
+                table[data[i].get_name()] = i;
+            }
+
+            while(currentGen <= maxComparisons) {
+                for(int i = 0; i < data.Count; i += 2) {
                     Favorite pleft = data[i]; //C# doesn't let you pass this as an argument apparently
                     Favorite pright;
                     left = i;
@@ -36,19 +28,17 @@ namespace RelSort {
                         pright = data[rand.Next(data.Count)];
                         while(pright == pleft)
                             pright = data[rand.Next(data.Count)];
-
                     }
                     else
                         pright = data[right];
+
                     while(true) {
                         compair = new KeyValuePair<string,string>(pleft.get_name(),pright.get_name());
                         if(test_pair(compair,tried)) {
-                            /*
-                            two edge cases to handle:
-                            pair has been compared before, try and shift right comparator down one array value
-                            pair has been compared, left has been compared to every other value already, 
-                                    so shifting right value will never result in a meaningful comparison
-                            */
+                            /* general process with one edge case to handle:
+                            pair has been compared before, try and shift right comparee down one array value, wrap around if maxed
+                            pair has been compared before and left has been compared to every other value already, 
+                                    so shifting right value will never result in a meaningful comparison */
                             while(true) {
                                 if(pleft.get_hierarchy_size() == data.Count - 1) {
                                     if(left == data.Count - 1)
@@ -58,12 +48,11 @@ namespace RelSort {
                                 else {
                                     if(right >= data.Count - 1)
                                         right = -1;
-                                    ++right;
-                                    pright = data[right];
+                                    pright = data[++right];
                                 }
-                                if(pright == pleft) //continue this loop until we have two unique comparisons to make
-                                    continue; 
-                                break; //should only run once unless the two wind up equal somehow
+                                if(pright == pleft) //continue this innermost loop until we have two unique comparisons to make
+                                    continue;
+                                break; //should only run once unless the two wind up equal
                             }
                         }
                         else {
@@ -71,38 +60,26 @@ namespace RelSort {
                             break;
                         }
                     }
+
                     compare(ref pleft,ref pright);
-                    data[table[pleft.get_name()]] = pleft; 
+                    data[table[pleft.get_name()]] = pleft;
                     data[table[pright.get_name()]] = pright;
                     ++numComparisons;
                 }
                 interpolate_relations(ref data,table);
                 arrange(ref data,ref table);
-                ++currentMax;
+                ++currentGen;
             }
-            //NOTE: this probably isn't right since the survey function was rewritten to be systematic rather than random
             System.Console.WriteLine("Performed {0} tests out of possible {1}.",numComparisons,(data.Count * (data.Count - 1)) / 2);
-        }
 
-        internal static bool check_relation_min(List<Favorite> data, int minNum){ 
-            foreach(Favorite mem in data) {
-                if(mem.get_hierarchy_size() >= minNum)
-                    continue;
-                else
-                    return false;
-            }
-            return true;
+            System.Console.WriteLine("Sorting..."); //deceptive since the sorting has already happened by this point
         }
+        
 
         internal static bool test_pair(KeyValuePair<string,string> input,List<KeyValuePair<string,string>> db){
             KeyValuePair<string,string> inverse = new KeyValuePair<string,string>(input.Value,input.Key);
-            if(input.Value == input.Key) { //DEBUG: attempt to catch a fatal error
-                System.Console.WriteLine("Warning: Program attempted to compare {0} to itself.",input.Key);
-                
-                return true;
-            }
             for(int i = 0; i < db.Count; i++) {
-                //if(db[i] == input || db[i] == inverse) //why doesn't C# Pairs have a built in == comparison like C++ does?
+                //if(db[i] == input || db[i] == inverse) //why don't C# Pairs have a built in == comparison like C++ does?
                 if((db[i].Value == input.Value && db[i].Key == input.Key) || (db[i].Value == inverse.Value && db[i].Key == inverse.Key))
                     return true;
             }
@@ -116,8 +93,8 @@ namespace RelSort {
 
             System.Console.WriteLine("Left or right, 1/0:");
             System.Console.WriteLine("{0} or {1}?",lname,rname);
-
-            //DEBUG: remove user input from testing
+            /*
+            //DEBUG: remove need for user input from testing
             if(lname.Length > 7)
                 lname = lname.Substring(6,2);
             else
@@ -138,9 +115,9 @@ namespace RelSort {
             lname = left.get_name(); //DEBUG: reset name values from earlier
             rname = right.get_name();
 
-            /*
-            pchoice = System.Int32.Parse(System.Console.ReadLine());
             */
+            pchoice = System.Int32.Parse(System.Console.ReadLine());
+            
             if(pchoice == 1) {
                 left.add_relation(rname,0);
                 right.add_relation(lname,1);
@@ -150,7 +127,7 @@ namespace RelSort {
                 right.add_relation(lname,0);
             }
         }
-        //Update relations to fill in missing relations after Size/2 comparisons have been made
+        //Update relations to fill in missing relations after each survey iteration
         internal static void interpolate_relations(ref List<Favorite> data, Dictionary<string,int> table) {
             /*
             observation: if A>B and B>C, logically A>C
@@ -172,12 +149,12 @@ namespace RelSort {
         #region Arrange
         internal static void arrange(ref List<Favorite> data,ref Dictionary<string,int> table) {
             int current_ref = data.Count - 1;
-            //insert the bottom of the list somewhere else in the list, restart at bottom. repeat until every list member is positioned properly
+            //insert the bottom of the list somewhere else in the list until every list member is positioned properly
             while(current_ref >= 0) {
                 if(!check_sort_compliant(data,table,current_ref)) {
                     if(data[current_ref].get_lower() > 0)
                         insert_item(ref data,ref table,data[current_ref].get_name(),find_greatest_array_val(data[current_ref],table),1);
-                    else //if you can't insert it above something, try and insert it below something instead. implies current_ref != last array position
+                    else //if you can't insert it above something, try and insert it below something instead.
                         insert_item(ref data,ref table,data[current_ref].get_name(),find_lowest_array_val(data[current_ref],table),2);
                     current_ref = data.Count - 1; //restart from the bottom either way
                 }
@@ -212,12 +189,12 @@ namespace RelSort {
             int i;
             Favorite temp_copy = data[targetLoc];
 
-            if(mode == 1) {
+            if(mode == 1) { //insert above something else
                 i = loc;
                 data.RemoveAt(targetLoc);
                 data.Insert(loc,temp_copy);
             }
-            else {
+            else { //insert below something else
                 i = targetLoc;
                 data.Insert(loc,temp_copy);
                 data.RemoveAt(targetLoc);
